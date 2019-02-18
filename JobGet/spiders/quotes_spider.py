@@ -26,7 +26,8 @@ class QuotesSpider(scrapy.Spider):
     # parse() 方法通常解析 response ，
     # 将抓取的数据提取为 dicts，并查找要跟进的新 URL 并从中创建新请求（Request）。
     def parse(self, response):
-        page = response.url.split('/')[2]
+        print('response.url:', response.url)
+        page = response.url.split("/")[4]
         print('page:',page)
 
         file_name = 'quotes-%s.html' % page
