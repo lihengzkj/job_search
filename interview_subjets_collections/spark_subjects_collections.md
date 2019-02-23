@@ -6,7 +6,7 @@
     3. 多次使用的RDD应该进行持久化。RDD调用cache()和persist()即可。进行算子计算就不会重头计算而且从持久化的RDD进行计算。
     
     4. 尽量避免使用shuffle类算子，如reducerBykey, join, distinct, repartition等。
-       在shuffle的过成功，可能发生大量的磁盘文件读写的IO操作，以及数据的网络传输操作。如果一定要使用join的话，
+       在shuffle的过程中，可能发生大量的磁盘文件读写的IO操作，以及数据的网络传输操作。如果一定要使用join的话，
        最好是把较小的RDD(几百M或者一两个G)进行广播，让这个较小的RDD驻留在每个executor中，这样join就不会发生shuffle了。
     
     5. 使用map-site的预聚合的shuffle操作。所谓的map-site的预聚合，说的是在每个节点本地对相同的key进行一次聚合操作。
@@ -39,3 +39,23 @@
         c. 集合类型。集合类型内部通常使用一些内部类封装集合元素， e.g.Map.Entry
            官方建议尽量不要使用上述三种数据结构。尽量使用字符串数组代替对象，使用原始类型代替字符串，
            使用数组代替集合，尽可能减少内存的使用，降低gc频率。
+           
+### spark 资源调优  
+    资源调优主要是进行参数的调优，具体如下：
+    
+    1. num-executors  job需要多少个executor来执行。可以根据资源情况和数据集的大小来计算合适的值。
+    
+    2. executor-memory  每个executor使用的内存大小
+    
+    3. executor-cores 每个executor使用的CUP的core的数量
+    
+    4. driver-memory  driver进程使用的内存大小。通常1G足够，但是当需要使用collect函数把RDD的数据拉取到driver上进行处理的
+        时候就需要增大内存。
+        
+    5. spark.default.parallelism    每个stage默认的task数量。默认spark根据底层的HDFS的block数量来设置task的数量，一个HDFS
+       的block对应一个task.通常默认的数量是偏少的。spark的官方建议设置该参数的值为executors * executor-cores 的 2到3倍。
+      
+    6. spark.sql.shuffle.partitions    spark默认使用的partition数量是200，这个参数通常来说是比较大的，造成资源浪费，我们
+       可以适当的减少。
+       
+    
