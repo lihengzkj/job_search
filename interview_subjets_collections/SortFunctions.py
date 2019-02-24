@@ -26,7 +26,28 @@ def quick_sort(list, left, right):
     quick_sort(list, left+1, high)
 
 
+def quick_sort_1(list, left , right):
+    if left >= right:
+        return
+
+    low = left
+    high = right
+    key = list[low]
+
+    while left < right:
+        while left < right and list[right] > key:
+            right -= 1
+        list[left] = list[right]
+        while left < right and list[left] < key:
+            left += 1
+        list[right] = list[left]
+    list[right] = key
+
+    quick_sort_1(list, low, left -1)
+    quick_sort_1(list, left + 1 , high)
+
+
 if __name__ == '__main__':
-    list = [2,6,4,8,3,10,7]
-    quick_sort(list, 0, len(list) - 1)
+    list = [67,2,6,4,8,3,10,7,12,34,56]
+    quick_sort_1(list, 0, len(list) - 1)
     print(list)

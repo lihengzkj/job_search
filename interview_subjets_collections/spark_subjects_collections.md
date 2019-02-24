@@ -58,4 +58,48 @@
     6. spark.sql.shuffle.partitions    spark默认使用的partition数量是200，这个参数通常来说是比较大的，造成资源浪费，我们
        可以适当的减少。
        
+       
+### spark RDD
+    1. 概念  
+        spark的核心概念就是RDD(resilient distributed dataset),指的是一个
+        只读的,可分区的分布式数据集,这个数据集的全部或者部分可以缓存到内存中,
+        在多次计算之间可以重用.  
+        分区是RDD内部并行计算的一个计算单元,RDD的数据集在逻辑上被划分为多个分
+        片,每个分片称为分区,分区的格式决定了并行计算的粒度,而每个分区的数值计算
+        都是在一个任务中进行的,因此任务的个数,也就是RDD的分区数决定. 
+  
+    2. RDD的特点
+        a. 是一个只读记录的集合: 状态不可变,不能修改  
+        b. 一个具有容错机制的特殊集  
+        c. 只能通过在稳定的存储器或其他的RDD上的确定性操作来创建.
+        d. 分区: 支持使用RDD中的元素根据key来分区,保存到多个节点上.
+            还原的时候只会重新计算丢失的分区的数据,而不会影响整个系统.  
+        e. 路径; 在RDD中叫血统lineage, 即RDD有充足的信息关于它是如何
+            从其他RDD产生而来的.
+        f: 持久化: 支持将会被重用的RDD缓存(如in-memory或者溢出到磁盘)
+        g: 延迟计算: spark会延迟计算RDD,使其能够管道化.
+        h: 操作: 丰富的转换,tansformation , action.
+        
+    3. RDD弹性的特点
+        a. 基于lineage的高效容错(第N个节点出错,会从第N+1个节点恢复,血统容错)
+        b. task如果失败会自动进行特定次数的重试(默认4次)
+        c. stage如果失败会自动进行特定次数的重试,只计算失败的数据分片.
+        d. 数据弹性调度: DAG Task和资源无关
+        e: checkpoint
+        f: 自动的进行内存和磁盘数据存储的切换
+        
+    4. RDD的底层实现原理
+        RDD是一个分布式数据集,其数据应该分部存储于多台机器上.事实上,每个RDD的数据
+        都是以block的形式存储于多台机器上.看图,其中每个executor会启动一个
+        blockManagerSlave并管理一部分block;而block的元数据有driver节点的
+        blockManagerMaster保存.BlockManagerSlave生成block后向
+        blockManagerMaster 注册该block, blockManagerMaster管理RDD和
+        block的关系,当RDD不需要存储的时候将向blockManagerSlave发送指令
+        删除相应的block.
+    
+    5. RDD的容错性机制
+        
+    
+    6. RDD cache 和 persist的区别
+        
     
