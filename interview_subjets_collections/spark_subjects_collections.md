@@ -102,4 +102,8 @@
     
     6. RDD cache 和 persist的区别
         
+    7. spark中导致shuffle的算子有哪些？
+        1. repartition类的操作，比如 repartition, repartitionAndSortWithinPartitions, coalesce等
+        2. byKey类的操作，比如 reduceByKey, groupByKey, soryByKey
+        3. join类的操作，比如 join, cogroup等
     
