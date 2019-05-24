@@ -107,3 +107,35 @@
         2. byKey类的操作，比如 reduceByKey, groupByKey, soryByKey
         3. join类的操作，比如 join, cogroup等
     
+ ## 资源分配
+       
+1. spark 资源的动态分配
+    ```abc
+    def conf(self):
+     conf = super(TbtestStatisBase, self).conf
+     conf.update({
+            'spark.shuffle.service.enabled': 'true',
+            'spark.dynamicAllocation.enabled': 'false',
+            'spark.dynamicAllocation.initialExecutors': 50,
+            'spark.dynamicAllocation.minExecutors': 1,
+            'spark.dynamicAllocation.maxExecutors': 125,
+            'spark.sql.parquet.compression.codec': 'snappy',
+            'spark.yarn.executor.memoryOverhead': 4096,
+            "spark.speculation": 'true',
+            'spark.kryoserializer.buffer.max': '512m',
+      })
+     ```
+    1、spark.shuffle.service.enabled。用来设置是否开启动态分配。开启了动态分配的Application在申请资源的时候默认会拥有更高的优先级  
+    2、spark.dynamicAllocation.initialExecutors (默认下是3)  
+    spark.dynamicAllocation.minExecutors (默认下是0)  
+    spark.dynamicAllocation.maxExecutors (默认下是30)  
+    Executor应该是所谓资源单位，自己理解为越多执行越快嘛，如果是Yarn的话，就是Containers，一个道理　　
+    3、spark.yarn.executor.memoryOverhead 是设置堆外内存大小，和 executor_memory 做个对比：  
+　　ExecutorMemory为JVM进程的JAVA堆区域。  
+　　MemoryOverhead是JVM进程中除Java堆以外占用的空间大小，包括方法区（永久代）、Java虚拟机栈、本地方法栈、JVM进程本身所用的内存、直接内存（Direct Memory）等。  
+　　两者关系：如果用于存储RDD的空间不足，先存储的RDD的分区会被后存储的覆盖。当需要使用丢失分区的数据时，丢失的数据会被重新计算。ExecutorMemory + MemoryOverhead之和（JVM进程总内存）  　　          　　　　             
+     我只是简单理解堆外内存为一个备用区域吧，还不知道具体什么作用。有遇到内存不够报错的情况，然后调大了MemoryOverhead。  
+    4、理论上：非动态分配情况下，我们必须要等到有100个Executor才能运行Application，并且这100个会一直被占用到程序结束，即便只有一个任务运行了很长时间。
+    动态分配情况下，当有10个Executor的时候，我们的Application就开始运行了，并且我们后续可以继续申请资源，最多申请到100个Executor，当我们有空闲资源的时候，
+    我们可以被释放资源到最少只保留10个Executor，当需要的时候我们有更高的优先级从YARN那儿拿到资源。
+    

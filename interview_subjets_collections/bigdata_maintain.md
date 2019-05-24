@@ -24,7 +24,36 @@
         <value>10080</value>
     </property>
      ```
-4. HDFS如何生效机架感知，取消机架感知有什么问题
+4. HDFS如何生效机架感知(Rack-Aware)，取消机架感知有什么问题
+    1. 概念： 告诉hadoop集群中哪台机器是属于哪个机架。
+    2. 什么情况使用： hadoop集群规模很大的情况下使用。 默认没有启用。
+    3. 机架考虑情况：权衡可靠性，可用性，带宽的消耗
+        1. 不同节点之间的通信能尽量发生在同一个机架之内
+        2. 为了提供容错能力，namenode节点尽可能把数据块的副本放到多个机架上。
+    4. 作用
+        1. 大型的hadoop集群一般运行在跨多个机架的计算机组成的集群上，不同的两台机器之间的通信需要经过交换机，这样
+           会增加数据传输的成本。在大多数情况下，同一台机架的两台机器之间的带宽比不同机架的两台机器的带宽要大。
+        2. 通过一个机架的感知的过程，namenode可以确定每个DN所属的机架。目前HDFS采用的策略就是将副本放到不同的机架上，
+            这样可以有效的防止整个机架失效的时候数据的丢失，并且允许读数据的时候充分利用多个机架的带宽。这种策略的设置
+            可以将副本均匀分布到集群中，有利于组织失效情况下的负载均衡。但是，这种策略的一个写操作需要传输数据块到多个
+            机架，这增加了写操作的成本。
+        3. 在读取数据的时候，为了减少整体的带宽消耗和降低整体贷款延迟，HDFS尽量读取距离客户端机器最近的副本。
+            如果在读取程序的同一个机架上有一个副本，那么就读取该副本；如果一个HDFS集群跨了多个数据中心，那么
+            客户端也将首先读取本地数据中心的副本。
+    5. 创建sh脚本，并在core-site.xml中配置
+        ```buildoutcfg
+        <property>
+           <name>topology.script.file.name</name>
+           <value>/path/to/the/script/file</value>
+        </property>
+        ```
+        改脚本文件接收一个参数，输出一个值。接收通常为某台datanode机器的IP地址，而输出通常是IP对应的datanode所在
+        的rack。例如”/rack1”。Namenode 启动时，会判断该配置选项是否为空，如果非空，则表示已经用机架感知的配置，
+        此时 namenode会根据配置寻找该脚本，并在接收到每一个 datanode 的 heartbeat时，
+        将该 datanode 的 ip 地址作为参数传给该脚本运行，并将得到的输出作为该 datanode 所属的机架，
+        保存到内存的一个 map 中。至于脚本的编写，就需要将真实的网络拓朴和机架信息了解清楚.
+
+后，通过该脚本能够将机器的 ip 地址正确的映射到相应的机架上去。
 5. HDFS常见的运维操作有哪些，哪些操作是高危的，如果高危操作出现问题，如何解决
     
 6. HDFS常见的故障是什么，如何处理，是否可以给出三种预案来防范大部分常见故障
@@ -38,23 +67,90 @@
         这是因为集群处于安全模式下,安全模式下禁止对文件的任何操作，包括写and 删除等操作。这时候需要退出安全模式。
         退出安全模式的命令:  `hdfs  dfsadmin  -safemode  leave`  
         查看集群的状态信息   `hdfs   dfsadmin   -report`  
-    4. 启动start-dfs.sh 后上传文件，发现上传失败。报异常错误。就尝试把tmp目录删除后重新格式化。 hadoop   namenode  -format 
+    4. 启动start-dfs.sh 后上传文件，发现上传失败。报异常错误。就尝试把tmp目录删除后重新格式化。 `hadoop   namenode  -format `
     5. 如果进程不存在,就查看相关进程日志文件来分析错误。
         如果进程存在还是有问题，可能是进程间的集群协调有问题。可以通过查看集群的报告信息。  
         `hdfs  dfsadmin   -report`
-7. 你经历过哪些严重的Hadoop故障
-8. HDFS常用的IO压力测试工具有哪些
+    6. ERROR org.apache.hadoop.hdfs.server.datanode.DataNode: java.io.IOException: Incompatible namespaceIDs
+        导致datanode启动不了。
+        每次namenode format会重新创建一个namenodeId,而dfs.data.dir参数配置的目录中包含的是上次format创建的id,
+        和dfs.name.dir参数配置的目录中的id不一致。namenode format清空了namenode下的数据,但是没有清空datanode下的数据,
+        导致启动时失败,所要做的就是每次fotmat前,清空dfs.data.dir参数配置的目录.
+    7. 如果datanode连接不上namenode，导致datanode无法启动。
+        很有可能是防火墙的问题
+    8. 磁盘空间都使用到达HDFS的阈值90%，导致datanode 启动
     
+7. 你经历过哪些严重的Hadoop故障
+
+8. HDFS常用的IO压力测试工具有哪些
+    (https://blog.csdn.net/zyc88888/article/details/78886327)
+    1. Terasort  
+        从文件角度出发的性能测试工具，大多都是吞吐率这个指标。转化到HDFS则是rpc的次数，opt次数，sync时长的指标信息，
+        然而terasort个异类。这个工具不仅考验文件系统的性能，更是对MR自动排序能力一中测验。
+        Terasort位于hadoop的example包中，是SortBenchmark（http://sortbenchmark.org）排序比赛使用的标准工具。
+    2. SliveTest  
+        SliveTest位于hadoop的test包中，代码结构清晰，其主要功能是通过大量map制造多种rpc请求，检测Namenode的性能。
+        我们可以设定map数量，每个map发起的rpc请求次数，每一种rpc操作占总操作的百分比，以及读写数据量、block size等配置。
+    3. DFSIO  
+        DFSIO是一个标准的HDFS的Benchmark工具，位于test包中。功能简单明了，测试的是读和写的性能指标。
 9. Hadoop哪些地方依赖于主机名，是否可以全部替换为IP呢（HDFS/YARN/SPARK）
+    
 10. HDFS有哪些核心的指标需要采集和监控，最重要的三个指标是什么
     
-11. HDFS节点下线，如何提升其下线速度
+11. HDFS节点下线和下线，如何提升其下线速度(需要结合官方文档来验证)  
+    参考：https://blog.csdn.net/sheng119/article/details/78854117
+    1. 上线
+        1. 在etc/hadoop/slaves文件中添加需要上线的服务器名，这个服务器名需要在hosts文件中配置IP的映射
+        2. 保证namenode节点上dfs.exclude这个文件是空的. dfs.include中添加需要上线的节点。
+        3. 到namenode节点上刷新节点：`hdfs dfsadmin -refreshNodes`
+        4. 在新节点上启动datanode进程： `hadoop-daemon.sh start datanode`
+    2. 下线
+        1. 将退役节点的ip或者hostname添加到namenode节点的dfs.exclude
+            如果是下线nodemanager节点，那么到resourcemanager节点上yarn.exclude文件中添加IP或者hostname
+        2. 在namenode节点上刷新： `hdfs dfsadmin -refreshNodes`
+        3. ssh到已经下线的机器上执行: `hadoop-daemon.sh stop datanode`
+        4. 再次到namenode节点上刷新： `hdfs dfsadmin -refreshNodes`
+    3. 提升下线速度：下线的过程中拷贝时间比较慢可以提高贷款，因为默认带宽只有1M
+        ```abc
+         > vim /usr/local/hadoop-2.7.3/etc/hadoop/hdfs-site.xml
+        <property>
+        　　<name>dfs.balance.bandwidthPerSec</name> 
+        　　<value>10485760</value> 
+        　　<description> 
+        　　　　Specifies the maximum amount of bandwidth that each datanode  
+        　　　　can utilize for the balancing purpose in term of  
+        　　　　the number of bytes per second.  
+        　　</description>
+        </property>
+        ```
+        
+    
 12. HDFS常见的误删除数据场景，以及如何防止数据被误删除
 13. HDFS集群对外提供的访问方式有几种，哪种最为常见，每种方式各自的优缺点和使用场景
 14. HDFS你做过哪些性能调优，哪些是通用的，哪些是针对特定场景的
 15. Hadoop日常的运维操作有什么管理工具，已经搭建的集群如何使用ambari
+
 16. Hadoop各类角色如何进行扩容，缩容，节点迁移（IP变更）
+    1. 给datanode节点的磁盘进行扩容
+        1. 增加了一块100GB的磁盘挂载到了datanode节点服务器上
+        2. 假设新的磁盘挂载在/mut的目录上
+        3. 赋权限给hadoop账户：`sudo chown -R hadoop:hadoop /mnt`
+        4. 下线这个datanode节点:`hadoop-daemon.sh stop datanode` ， 还要配置*.exclude文件，包含要下线的节点
+        5. 修改配置文件hdfs-site.xml, 添加目录
+            ```a
+            <property>
+                <name>dfs.datanode.data.dir</name>
+                <value>file:/usr/local/hadoop-2.7.3/tmp/dfs/data,file:/mnt/dfs/data</value>
+            </property>
+            ```
+        6. 启动datanode: `hadoop-daemon.sh start datanode`
+        7. 查看集群状态: `hadoop dfsadmin -report`
+        8. 重新上线该datanode节点： 清除*.exclude文件中的节点信息，
+            然后刷新 `hdfs dfsadmin -refreshNodes` 和 `yarn rmadmin -refreshNodes`
+        9. 查看是否扩容: `hadoop dfsadmin -report`
+        
 17. Hadoop各类角色的JVM参数配置如何设定
+    
 18. HDFS的block大小如何设置，取决于哪些因素
     设置hdfs-site.xml下面的属性值:
     ```aa
@@ -67,6 +163,8 @@
 19. YARN的nodemanager上跑任务的时候，有时候会将磁盘全部打满，如何解决
 20. HDFS集群多个业务方使用时如何提前做好运维规划，如权限，配额，流量突增，数据安全，目录结构
 21. HDFS中，小文件的定义是什么，如何对小文件进行统计分析，如何优化该问题
+    1. 
+
 22. HDFS的namenode如何进行主备切换
 23. YARN的nodemanager导致机器死机，如何解决
     
@@ -111,37 +209,7 @@
 36. HBase和Hive都是基于Hadoop，为什么Hive查询起来非常慢，但HBase不是？  
     Hive是类SQL引擎，其查询都需要遍历整张表，跑MapReduce自然很慢，
     但HBase是一种NoSQL的列式数据库，基于Key/Value的存储格式，不需要像Hive一样遍历，自然在速度上，乃至写的性能上是相当之快的。
-    
-37. spark 资源的动态分配
-    ```abc
-    def conf(self):
-     conf = super(TbtestStatisBase, self).conf
-     conf.update({
-            'spark.shuffle.service.enabled': 'true',
-            'spark.dynamicAllocation.enabled': 'false',
-            'spark.dynamicAllocation.initialExecutors': 50,
-            'spark.dynamicAllocation.minExecutors': 1,
-            'spark.dynamicAllocation.maxExecutors': 125,
-            'spark.sql.parquet.compression.codec': 'snappy',
-            'spark.yarn.executor.memoryOverhead': 4096,
-            "spark.speculation": 'true',
-            'spark.kryoserializer.buffer.max': '512m',
-      })
-     ```
-    1、spark.shuffle.service.enabled。用来设置是否开启动态分配。开启了动态分配的Application在申请资源的时候默认会拥有更高的优先级  
-    2、spark.dynamicAllocation.initialExecutors (默认下是3)  
-    spark.dynamicAllocation.minExecutors (默认下是0)  
-    spark.dynamicAllocation.maxExecutors (默认下是30)  
-    Executor应该是所谓资源单位，自己理解为越多执行越快嘛，如果是Yarn的话，就是Containers，一个道理　　
-    3、spark.yarn.executor.memoryOverhead 是设置堆外内存大小，和 executor_memory 做个对比：  
-　　ExecutorMemory为JVM进程的JAVA堆区域。  
-　　MemoryOverhead是JVM进程中除Java堆以外占用的空间大小，包括方法区（永久代）、Java虚拟机栈、本地方法栈、JVM进程本身所用的内存、直接内存（Direct Memory）等。  
-　　两者关系：如果用于存储RDD的空间不足，先存储的RDD的分区会被后存储的覆盖。当需要使用丢失分区的数据时，丢失的数据会被重新计算。ExecutorMemory + MemoryOverhead之和（JVM进程总内存）  　　          　　　　             
-     我只是简单理解堆外内存为一个备用区域吧，还不知道具体什么作用。有遇到内存不够报错的情况，然后调大了MemoryOverhead。  
-    4、理论上：非动态分配情况下，我们必须要等到有100个Executor才能运行Application，并且这100个会一直被占用到程序结束，即便只有一个任务运行了很长时间。
-    动态分配情况下，当有10个Executor的时候，我们的Application就开始运行了，并且我们后续可以继续申请资源，最多申请到100个Executor，当我们有空闲资源的时候，
-    我们可以被释放资源到最少只保留10个Executor，当需要的时候我们有更高的优先级从YARN那儿拿到资源。
-    
+ 
 38. HDFS的存储机制
     1. 读取机制
         1. 客户端向namenode请求上传文件，namenode检查目标文件是否已存在，父目录是否存在。
