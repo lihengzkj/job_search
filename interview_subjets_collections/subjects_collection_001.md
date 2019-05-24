@@ -7,3 +7,24 @@
     6. 处理大数据重用排序：快速排序， 堆排序，归并排序，桶排序
     
     
+ ## ss 
+    1. HashMap, HashTable,ConcurrentHashMap的区别
+    2. short s1 = 1; s1 = s1 +1; wrong or right? why ?
+    3. 关系数据库和非关系数据库的区别，什么是列数据库，具体应用场景是什么？
+    4. Describle HDFS HA
+    5. kafka 的数据是存内存还是存盘? 为什么吞吐量大? 怎么保证数据不丢失?
+    6. 描述HBase一条数据的写入过程
+    7. 解决HBase表在初始写入的时候热度热写的问题?
+    8. 解决Redis的服务器突然断电的数据丢失问题?
+    9. 如何避免HDFS的小文件问题
+    
+## hl 
+    1. 怎么防止spark的内存泄漏的问题
+    2. 怎么处理数据倾斜
+    3. 列出所知道的spark的算子，并提出使用的建议
+    4. 怎么促进Hive的查询？ 怎么设计表？
+    5. 描述在做ETL过程中遇到的困难或者难点
+    6. 描述Hadoop的各个组件
+    7. 描述Hadoop的checkpoints
+    
+    
