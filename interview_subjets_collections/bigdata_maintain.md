@@ -51,9 +51,9 @@
         的rack。例如”/rack1”。Namenode 启动时，会判断该配置选项是否为空，如果非空，则表示已经用机架感知的配置，
         此时 namenode会根据配置寻找该脚本，并在接收到每一个 datanode 的 heartbeat时，
         将该 datanode 的 ip 地址作为参数传给该脚本运行，并将得到的输出作为该 datanode 所属的机架，
-        保存到内存的一个 map 中。至于脚本的编写，就需要将真实的网络拓朴和机架信息了解清楚.
-
-后，通过该脚本能够将机器的 ip 地址正确的映射到相应的机架上去。
+        保存到内存的一个 map 中。至于脚本的编写，就需要将真实的网络拓朴和机架信息了解清楚后
+        通过该脚本能够将机器的 ip 地址正确的映射到相应的机架上去。  
+        
 5. HDFS常见的运维操作有哪些，哪些操作是高危的，如果高危操作出现问题，如何解决
     
 6. HDFS常见的故障是什么，如何处理，是否可以给出三种预案来防范大部分常见故障
@@ -81,7 +81,7 @@
     8. 磁盘空间都使用到达HDFS的阈值90%，导致datanode 启动
     
 7. 你经历过哪些严重的Hadoop故障
-
+    
 8. HDFS常用的IO压力测试工具有哪些
     (https://blog.csdn.net/zyc88888/article/details/78886327)
     1. Terasort  
@@ -93,6 +93,7 @@
         我们可以设定map数量，每个map发起的rpc请求次数，每一种rpc操作占总操作的百分比，以及读写数据量、block size等配置。
     3. DFSIO  
         DFSIO是一个标准的HDFS的Benchmark工具，位于test包中。功能简单明了，测试的是读和写的性能指标。
+        
 9. Hadoop哪些地方依赖于主机名，是否可以全部替换为IP呢（HDFS/YARN/SPARK）
     
 10. HDFS有哪些核心的指标需要采集和监控，最重要的三个指标是什么
@@ -126,10 +127,13 @@
         
     
 12. HDFS常见的误删除数据场景，以及如何防止数据被误删除
+    
 13. HDFS集群对外提供的访问方式有几种，哪种最为常见，每种方式各自的优缺点和使用场景
+    
 14. HDFS你做过哪些性能调优，哪些是通用的，哪些是针对特定场景的
+    
 15. Hadoop日常的运维操作有什么管理工具，已经搭建的集群如何使用ambari
-
+    
 16. Hadoop各类角色如何进行扩容，缩容，节点迁移（IP变更）
     1. 给datanode节点的磁盘进行扩容
         1. 增加了一块100GB的磁盘挂载到了datanode节点服务器上
@@ -161,18 +165,26 @@
     </property>
     ```
 19. YARN的nodemanager上跑任务的时候，有时候会将磁盘全部打满，如何解决
+
 20. HDFS集群多个业务方使用时如何提前做好运维规划，如权限，配额，流量突增，数据安全，目录结构
+
 21. HDFS中，小文件的定义是什么，如何对小文件进行统计分析，如何优化该问题
     1. 
 
 22. HDFS的namenode如何进行主备切换
+
 23. YARN的nodemanager导致机器死机，如何解决
     
 24. 如何下线YARN的nodemanager节点，假如该节点持续在运行计算任务
+
 25. YARN的nodemanager节点，从Active Nodes转为Lost Nodes，有哪些原因，在哪里设置
+
 26. YARN的nodemanager节点如果转为Lost Nodes后，该节点上的计算任务是否还会正常继续
+
 27. HDFS的快照原理简要介绍一下，为什么可以确保数据的安全性
+
 28. YARN的yarn.nodemanager.local-dirs和yarn.nodemanager.log-dirs参数应该如何设置，有哪些常见的问题
+
 29. distcp拷贝数据的时候，出现了java.lang.outofmemoryerror:java heap space，如何处理
     
 30. 有两个hadoop集群，机器相同，磁盘占用相同，一个集群磁盘的使用率比较均匀，
@@ -226,9 +238,10 @@
         2. 挑选一台datanode（就近原则，然后随机）服务器，请求读取数据。
         3. datanode开始传输数据给客户端（从磁盘里面读取数据放入流，以packet为单位来做校验）。
         4. 客户端以packet为单位接收，先在本地缓存，然后写入目标文件。
+        
  39. secondarynamenode工作机制
     1. 第一阶段：namenode启动
-        1. 第一次启动namenode格式化后，创建fsimage和edits文件。如果不是第一次启动，直接加载编辑日志和镜像文件到内存
+        1. 第一次启动namenode格式化后，创建fsimage和edits文件。如果不是第一次启动，直接加载edit日志和fsimage到内存
         2. 客户端对元数据进行增删改的请求
         3. namenode记录操作日志，更新滚动日志。
         4. namenode在内存中对数据进行增删改查
@@ -236,8 +249,8 @@
         1. SecondaryNameNode询问namenode是否需要checkpoint。直接带回namenode是否检查结果。
         2. SecondaryNameNode请求执行checkpoint。
         3. namenode滚动正在写的edits日志
-        4. 将滚动前的编辑日志和镜像文件拷贝到Secondary NameNode
-        5. SecondaryNameNode加载编辑日志和镜像文件到内存，并合并。
+        4. 将滚动前的edit日志和fsimage拷贝到Secondary NameNode
+        5. SecondaryNameNode加载edit日志和fsimage到内存，并合并。
         6. 生成新的镜像文件fsimage.chkpoint
         7. 拷贝fsimage.chkpoint到namenode
         8. namenode将fsimage.chkpoint重新命名成fsimage
@@ -250,25 +263,34 @@
         1. SecondaryNameNode中保存了一份和namenode一致的镜像文件（fsimage）和编辑日志（edits）
         2. 在主namenode发生故障时（假设没有及时备份数据），可以从SecondaryNameNode恢复数据
         
- 41. hadoop节点动态上线下线怎么操作
-    1. 上线
-        1. 当要新上线数据节点的时候，需要把数据节点的名字追加在 dfs.hosts 文件中
-        2. 关闭新增节点的防火墙
-        3. 在 NameNode 节点的 hosts 文件中加入新增数据节点的 hostname
-        4. 在每个新增数据节点的 hosts 文件中加入 NameNode 的 hostname
-        5. 在 NameNode 节点上增加新增节点的 SSH 免密码登录的操作
-        6. 在 NameNode 节点上的 dfs.hosts 中追加上新增节点的 hostname,
-        7. 在其他节点上执行刷新操作：hdfs dfsadmin -refreshNodes
-        8. 在 NameNode 节点上，更改 slaves 文件，将要上线的数据节点 hostname 追加到 slaves 文件中
-        9. 启动 DataNode 节点
-        10. 查看 NameNode 的监控页面看是否有新增加的节点
-    2. 下线
-        1. 修改/conf/hdfs-site.xml 文件
-        2. 确定需要下线的机器，dfs.osts.exclude 文件中配置好需要下架的机器，这个是阻止下架的机器去连接 NameNode。
-        3. 配置完成之后进行配置的刷新操作./bin/hadoop dfsadmin -refreshNodes,这个操作的作用是在后台进行 block 块的移动。
-        4. 当执行三的命令完成之后，需要下架的机器就可以关闭了，可以查看现在集群上连接的节点，正在执行 Decommission，
+ 41. hadoop节点动态上线下线怎么操作（重复问题）
+    1. 动态增加和删除datanode或者yarn的节点，首先是在hdfs-site.xml文件中添加 白名单 和 黑名单两个文件：
+        ```
+        <property>
+            <!-- 白名单信息-->
+            <name>dfs.hosts</name>
+            <value>/home/hadoop/hadoop/etc/dfs.include</value>
+        </property>
+        <property>
+            <!-- 黑名单信息-->
+            <name>dfs.hosts.exclude</name>
+            <value>/home/hadoop/hadoop/etc/dfs.exclude</value>
+        </property>
+        ```
+    2. 上线
+        1. 当要新上线数据节点的时候，需要把数据节点的hostname追加在 dfs.include 文件中
+        2. 在 NameNode 节点的 hosts 文件中加入新增数据节点的 hostname
+        3. 在namenode上刷新操作：hdfs dfsadmin -refreshNodes
+        4. 在 NameNode 节点上，更改 slaves 文件，将要上线的数据节点 hostname 追加到 slaves 文件中
+        5. 在新节点上启动datanode或者nodemanager： hadoop-daemon.sh start datanode / nodemanager
+        6. 查看 NameNode 的监控页面看是否有新增加的节点
+    3. 下线
+        1. 确定需要下线的机器，dfs.exclude 文件中配置好需要下架的机器，这个是阻止下架的机器去连接 NameNode。
+        2. 配置完成之后进行配置的刷新操作./bin/hadoop dfsadmin -refreshNodes,这个操作的作用是在后台进行 block 块的移动。
+        3. 直接查看UI，正在执行 Decommission，
            会显示：Decommission Status : Decommission in progress 执行完毕后，会显示：Decommission Status :Decommissioned
-        5. 机器下线完毕，将他们从excludes 文件中移除。
+        4. 机器下线完毕后, 执行 `hadoop-datemon.sh stop datanode`来关闭datanode节点
+        5. 最后刷新namenode节点 
         
 42. HAnamenode是如何工作的（ZKFailoverController主要职责）
     1. 健康监测：周期性的向它监控的NN发送健康探测命令，从而来确定某个NameNode是否处于健康状态，
@@ -279,4 +301,7 @@
     3. 当宕机的NN新启动时，它会再次注册zookeper，发现已经有znode锁了，
         便会自动变为Standby状态，如此往复循环，保证高可靠，需要注意，目前仅仅支持最多配置2个NN。
     4. master选举：如上所述，通过在zookeeper中维持一个短暂类型的znode，来实现抢占式的锁机制，从而判断那个NameNode为Active状态
+    
+43. Hadoop Federation
+    https://blog.csdn.net/Androidlushangderen/article/details/52135506
     
