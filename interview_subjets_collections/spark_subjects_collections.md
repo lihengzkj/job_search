@@ -41,24 +41,33 @@
            使用数组代替集合，尽可能减少内存的使用，降低gc频率。
            
 ### spark 资源调优  
+
     资源调优主要是进行参数的调优，具体如下：
-    
     1. num-executors  job需要多少个executor来执行。可以根据资源情况和数据集的大小来计算合适的值。
     
     2. executor-memory  每个executor使用的内存大小
     
     3. executor-cores 每个executor使用的CUP的core的数量
     
-    4. driver-memory  driver进程使用的内存大小。通常1G足够，但是当需要使用collect函数把RDD的数据拉取到driver上进行处理的
-        时候就需要增大内存。
+    4. driver-memory  driver进程使用的内存大小。通常1G足够，但是当需要使用collect函数把RDD的数据拉取到driver上进行处理的时候就需要增大内存。
         
     5. spark.default.parallelism    每个stage默认的task数量。默认spark根据底层的HDFS的block数量来设置task的数量，一个HDFS
        的block对应一个task.通常默认的数量是偏少的。spark的官方建议设置该参数的值为executors * executor-cores 的 2到3倍。
-      
+       
     6. spark.sql.shuffle.partitions    spark默认使用的partition数量是200，这个参数通常来说是比较大的，造成资源浪费，我们
        可以适当的减少。
        
+    7. spark.storage.memeoryFraction    设置RDD持久化数据在Executor内存中能占用的比例。默认0.6， 也就是说默认Executor 60%的内存可以用来持久化RDD数据. 如果spark作业中RDD持久化操作较多，调高这个参数。如果shuffle较多，持久化较少的话，适当降低改参数比较合适。 作业有频繁的gc导致运行缓慢，可能内存不够，建议调低改参数。
+    8. spark.shuffle.memoryFraction     用于设置shuffle过程中一个task拉取到上个stage的task的输出后，进行聚合操作时能够使用的Executor内存的比列。默认0.2，也就是说Executor的20%的内存可以用来进行该操作。shuffle操作在使用时，发现使用内存操作了Executor内存的20%，就必须溢出写到磁盘上，这个降低了性能。所以shuffle操作比较多的时候建议调高改参数。
        
+### 数据倾斜调优
+    1. 现象
+        1. 大数据task都比较快，但是个别的task执行很慢。  
+        2. 原本正常执行的spark job，某天突然OOM异常，观察异常栈，是代码造成的。
+    2 原理  
+        在shuffle的时候，必须各个节点上相同的key拉取到某个节点上的一个task来进行处理，而从各个节点来的相同key的数据量很大，其他task的拉取的量比较小，造成了个别task的执行时间很长。
+    3. 解决方案
+        1. 
 ### spark RDD
     1. 概念  
         spark的核心概念就是RDD(resilient distributed dataset),指的是一个
