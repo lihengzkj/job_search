@@ -41,7 +41,7 @@
             如果在读取程序的同一个机架上有一个副本，那么就读取该副本；如果一个HDFS集群跨了多个数据中心，那么
             客户端也将首先读取本地数据中心的副本。
     5. 创建sh脚本，并在core-site.xml中配置
-        ```buildoutcfg
+        ```a
         <property>
            <name>topology.script.file.name</name>
            <value>/path/to/the/script/file</value>
@@ -169,7 +169,25 @@
 20. HDFS集群多个业务方使用时如何提前做好运维规划，如权限，配额，流量突增，数据安全，目录结构
 
 21. HDFS中，小文件的定义是什么，如何对小文件进行统计分析，如何优化该问题
-    1. 
+    1. hadoop 自身的给出的小文件处理方案
+        1. HAR 俗称hadoop的归档文件，以.har结尾。就是将多个小文件归档为一个文件，
+            归档文件中保函元数据信息和小文件的内容，从一定程度上将namenode管理的元数据
+            信息下沉到datanode上的归档文件中，避免元数据膨胀。使用 `hadoop archive` 的命令
+            来创建。  
+            缺点：archive文件一旦创建就不能修改，如果小文件有问题，就必须解压修正后重新创建。
+            创建归档文件之后，原来的小文件还在，需要手动删除。 创建和解压HAR都是依赖MapReduce，
+            查询文件耗时很高；还有就是归档文件不支持压缩。
+        2. SequenceFile  本质上是一种二进制文件格式，类似key-value存储，通过MapReduce的format
+            方式产生，个人认为可以使用spark的job来产生。  
+            sequenceFile的内容是由Header, Record/Block SYNC标记组成，根据压缩方式的不同，组织结构不同
+            主要分为了Record组织模式和Block组织模式。  
+            优点：基于记录或者块的数据压缩，不考虑具体存储格式，写入读取简单。缺点：需要一个合并文件
+            的过程，依赖于MapReduce，二进制文件，不方便查看。
+        3. CombinedFile     其原理也是基于MapReduce将原文件进行转换，通过CombineFileInputFormat
+            类将多个文件分别打包到一个split中，每个Mapper处理一个split，提高并发效率。通过这种
+            方式能够快速将小文件整合。最终的合并文件是将多个小文件内容整合到一个文件中，每一行开始包含
+            每个小文件的完整的HDFS路径名。
+            
 
 22. HDFS的namenode如何进行主备切换
 
@@ -263,16 +281,14 @@
         1. SecondaryNameNode中保存了一份和namenode一致的镜像文件（fsimage）和编辑日志（edits）
         2. 在主namenode发生故障时（假设没有及时备份数据），可以从SecondaryNameNode恢复数据
         
- 41. hadoop节点动态上线下线怎么操作（重复问题）
+ 41. hadoop节点动态上线下线怎么操作（重复问题）  
     1. 动态增加和删除datanode或者yarn的节点，首先是在hdfs-site.xml文件中添加 白名单 和 黑名单两个文件：
         ```
         <property>
-            <!-- 白名单信息-->
             <name>dfs.hosts</name>
             <value>/home/hadoop/hadoop/etc/dfs.include</value>
         </property>
         <property>
-            <!-- 黑名单信息-->
             <name>dfs.hosts.exclude</name>
             <value>/home/hadoop/hadoop/etc/dfs.exclude</value>
         </property>
