@@ -148,3 +148,7 @@
     动态分配情况下，当有10个Executor的时候，我们的Application就开始运行了，并且我们后续可以继续申请资源，最多申请到100个Executor，当我们有空闲资源的时候，
     我们可以被释放资源到最少只保留10个Executor，当需要的时候我们有更高的优先级从YARN那儿拿到资源。
     
+### RDD  DataSet   DataFrame的区别
+    1 Spark 布道者Jules S. Damji的解读：https://www.infoq.cn/article/three-apache-spark-apis-rdds-dataframes-and-datasets
+    2 有深度的解读： https://www.jianshu.com/p/c0181667daa0
+    3 浅显的解读：https://www.cnblogs.com/starwater/p/6841807.html
