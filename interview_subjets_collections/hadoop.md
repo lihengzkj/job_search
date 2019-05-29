@@ -291,6 +291,7 @@
         <property>
             <name>dfs.hosts.exclude</name>
             <value>/home/hadoop/hadoop/etc/dfs.exclude</value>
+            <value>/home/hadoop/hadoop/etc/dfs.exclude</value>
         </property>
         ```
     2. 上线
@@ -317,7 +318,10 @@
     3. 当宕机的NN新启动时，它会再次注册zookeper，发现已经有znode锁了，
         便会自动变为Standby状态，如此往复循环，保证高可靠，需要注意，目前仅仅支持最多配置2个NN。
     4. master选举：如上所述，通过在zookeeper中维持一个短暂类型的znode，来实现抢占式的锁机制，从而判断那个NameNode为Active状态
+43. Hadoop的HA的搭建
+    1. https://www.cnblogs.com/netbloomy/p/6660131.html
+    2. https://www.cnblogs.com/netbloomy/p/6660131.html
     
-43. Hadoop Federation
+44. Hadoop Federation
     https://blog.csdn.net/Androidlushangderen/article/details/52135506
     
