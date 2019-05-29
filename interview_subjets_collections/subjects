@@ -2,7 +2,7 @@
 25.Spark 的stage的理解
 
 
-26.Spark 宽依赖和窄依赖
+26.
 
 27.Spark 二次排序
 
@@ -10,7 +10,7 @@
 
 1、RDD,DAG,Stage怎么理解？
 
-2、宽依赖 窄依赖怎么理解？
+
 
 3、Stage是基于什么原理分割task的？
 
@@ -134,7 +134,7 @@
 7.dataset和dataframe？
 8.通过什么方式学习spark的？
 9.有哪些数据倾斜，怎么解决？
-10.宽依赖窄依赖？
+
 11.yarn的原理？
 12.BlockManager怎么管理硬盘和内存的。
 13.哪些算子操作涉及到shuffle

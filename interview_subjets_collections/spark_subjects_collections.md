@@ -152,3 +152,6 @@
     1 Spark 布道者Jules S. Damji的解读：https://www.infoq.cn/article/three-apache-spark-apis-rdds-dataframes-and-datasets
     2 有深度的解读： https://www.jianshu.com/p/c0181667daa0
     3 浅显的解读：https://www.cnblogs.com/starwater/p/6841807.html
+
+### Spark 宽依赖和窄依赖
+    
