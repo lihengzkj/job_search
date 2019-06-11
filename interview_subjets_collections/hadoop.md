@@ -241,7 +241,7 @@
     但HBase是一种NoSQL的列式数据库，基于Key/Value的存储格式，不需要像Hive一样遍历，自然在速度上，乃至写的性能上是相当之快的。
  
 38. HDFS的存储机制
-    1. 读取机制
+    1. 写入机制
         1. 客户端向namenode请求上传文件，namenode检查目标文件是否已存在，父目录是否存在。
         2. namenode返回是否可以上传。
         3. 客户端请求第一个 block上传到哪几个datanode服务器上。
@@ -291,7 +291,6 @@
         <property>
             <name>dfs.hosts.exclude</name>
             <value>/home/hadoop/hadoop/etc/dfs.exclude</value>
-            <value>/home/hadoop/hadoop/etc/dfs.exclude</value>
         </property>
         ```
     2. 上线
@@ -325,3 +324,5 @@
 44. Hadoop Federation
     https://blog.csdn.net/Androidlushangderen/article/details/52135506
     
+45. Hadoop namenode is very slow
+    https://blog.csdn.net/Androidlushangderen/article/details/52198256

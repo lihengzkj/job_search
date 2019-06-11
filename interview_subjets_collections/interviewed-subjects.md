@@ -44,3 +44,8 @@
             3.三条dockerfile的最佳实践
             4. dockerfile指令中RUN,CMD,ENTRYPOINT的区别以及最佳实践
     face-to-face:
+        1. 集群规模
+        2. 数据量
+        3. spark的运行原理
+        4. 宽依赖和窄依赖
+        5. 具体业务流程
