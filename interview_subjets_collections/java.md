@@ -8,7 +8,7 @@
 8. 锁原理
 9. synchronized和reentrantlock的区别
 10. 偏向锁，轻量级锁，重量级锁的原理，能够从偏向锁直接升级到重量锁?
-11.java并发包有哪些类，如何使用
+11. java并发包有哪些类，如何使用
 12. 线程池的原理和参数配置
 13. jvm调优
 14. 堆大小的设置
@@ -23,3 +23,8 @@
 23. HashMap扩容规则和具体实现
 24. CAS理解和它存在的问题
 25. ConcurrentHashMap的锁机制
+26. CompletableFuture, jdk1.8新特性，怎么实现多线程的并发控制。
+27. jvm里, new出来的对象放在那个区域，深入一下，如何查看和优化jvm的内存
+28. ArrayList和LinkedList的底层实现
+29. HashMap底层原理，hashcode的put, get等操作。
+30. ConcurrentHashMap底层
