@@ -45,3 +45,4 @@
 
 10. 三种模型的对应关系
     ![](./pic/three-model.jpg)
+    ![](./pic/models-relation.jpg)
