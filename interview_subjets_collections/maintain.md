@@ -8,7 +8,7 @@
     1. 
     2. 
 7. SYN 请求
-8. HTTP 5层模型
+8. HTTP 5层模型(From:https://blog.csdn.net/qq_22238021/article/details/80279001)  
     1. 应用层application layer
         体系中最高的层。直接为用户的应用进程(例如电子邮件，文件传输，终端仿真)提供服务。  
         在internet中的应用层协议很多，比如HTTP协议，SMTP协议，FTP,DNS,POP3,SNMP等协议
@@ -40,9 +40,12 @@
         以免继续传送下去白白浪费网络资源。如需改正错误，就由运输层的TCP协议来完成。
     5. 物理层 phsical layer
         在物理层上所传数据的单位是比特。物理层的任务就是透明地传送比特流。
-    https://blog.csdn.net/qq_22238021/article/details/80279001
+    
 9. TCP 和 UDP 区别
 
-10. 三种模型的对应关系
+10. 三种模型的对应关系  
     ![](./pic/three-model.jpg)
     ![](./pic/models-relation.jpg)
+11. DNS  
+    Domain Name System: 互联网的一项服务。它作为域名和IP地址的相互映射的一个分布式数据库，能够使人更方便的相互访问互联网。
+    DNS使用TCP和UDP端口53.当前，每一级域名的长度限制是63个字符，域名总长度不能超过253个字符。
