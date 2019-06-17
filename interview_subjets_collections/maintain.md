@@ -1,9 +1,15 @@
 1. 负载均衡原理
-    
+    1. https://juejin.im/entry/5aeb158f518825672033e90f
+    2. https://www.jianshu.com/p/ac77563dbe0d
+    3. https://blog.csdn.net/sdgihshdv/article/details/79475839
 2. 数据库连接池调优
 3. Hadoop cluster搭建过程
 4. docker 容器应用
 5. 监控的搭建和配置
+    Hadoop集群性能监控Ganglia, Nagios
+    使用Hadoop工具 Ambari管理集群
+    监控指标：https://segmentfault.com/a/1190000008304268
+    
 6. OSI模型:七层模型(OSI: Open System Interconnection)
     1. 
     2. 
@@ -49,3 +55,13 @@
 11. DNS  
     Domain Name System: 互联网的一项服务。它作为域名和IP地址的相互映射的一个分布式数据库，能够使人更方便的相互访问互联网。
     DNS使用TCP和UDP端口53.当前，每一级域名的长度限制是63个字符，域名总长度不能超过253个字符。
+12. A记录
+13. LVS(Linux Virtual Server，早期的负载均衡服务器)
+    是一个基于四层/具有强大性能的反向代理服务器。  
+    LVS通过工作与内核的ipvs模块来实现功能，其主要工作与netfilter的INPUT链上。而用户需要对ipvs进行操作配置则需要ipvsadm这个工具。
+    ipvsadm主要用来设置LVS模型，调度方式以及指定后端主机。  
+    基于IP的负载均衡，早期比较具有代表性并且被大量使用的。  
+    原理是LVS在Linux内核动态获取到IP报文后，根据特定的负载均衡算法将IP报文转发到整个集群的某台服务器上。  
+    缺点: LVS性能依赖Linux内核的网络性能，但Linux内核的网络路径过长导致了大量开销，使得LVS单机性能较低。
+    
+    
